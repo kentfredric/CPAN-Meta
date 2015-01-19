@@ -13,6 +13,7 @@ our @EXPORT_OK = qw(
   dclone_json_xs
   dclone_cpanel_json_xs
   dclone_pp
+  dclone_pp_noblessed
 );
 
 ## Original Implementation in CPAN::Meta::Converter
@@ -75,6 +76,27 @@ sub dclone_pp {
   }
   die "Don't understand how to clone $ref/$reftype";
 }
+
+sub dclone_pp_noblessed {
+  my ($ref) = @_;
+  return $ref unless my $reftype = ref $ref;
+
+  local $_CLONE_DEPTH =
+    defined $_CLONE_DEPTH ? $_CLONE_DEPTH - 1 : $DCLONE_MAXDEPTH;
+  die "Depth Limit $DCLONE_MAXDEPTH Exceeded" if $_CLONE_DEPTH == 0;
+
+  return [ map { dclone_pp($_) } @{$ref} ] if 'ARRAY' eq $reftype;
+  return { map { $_ => dclone_pp( $ref->{$_} ) } keys %{$ref} }
+    if 'HASH' eq $reftype;
+
+  if ( 'SCALAR' eq $reftype ) {
+    my $new = dclone_pp( ${$ref} );
+    return \$new;
+  }
+  # Just stringify everything else
+  return "$ref";
+}
+
 
 1;
 

@@ -35,8 +35,9 @@ use warnings;
 use Benchmark::CSV;
 use FindBin;
 
-use lib "$FindBin::Bin";
-use clone_methods qw( dclone_json_pp dclone_json_xs dclone_pp );
+use lib "$FindBin::Bin/lib";
+use clone_methods
+  qw( dclone_json_pp dclone_json_xs dclone_pp dclone_pp_noblessed );
 use source_data qw( load_vobjects );
 
 my $source_structure = load_vobjects("$FindBin::Bin/files/bench_source.json");
@@ -68,11 +69,18 @@ $benchmark->add_instance(
   },
 );
 
+$benchmark->add_instance(
+  pp_clone_noblessed => sub {
+    my $new = dclone_pp_noblessed($source_structure);
+    return;
+  },
+);
+
 *STDOUT->autoflush(1);
 my $num_steps = 20;
 print "[" . ( "_" x $num_steps ) . "]\r[";
-for ( 1 .. $numsteps ) {
-  $benchmark->run_iterations($num_steps);
+for ( 1 .. $num_steps ) {
+  $benchmark->run_iterations(100);
   print "#";
 }
 print "]\n";
