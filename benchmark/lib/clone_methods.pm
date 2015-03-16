@@ -11,6 +11,7 @@ use Exporter 'import';
 our @EXPORT_OK = qw(
   dclone_json_pp
   dclone_json_xs
+  dclone_json_tiny
   dclone_cpanel_json_xs
   dclone_pp
   dclone_pp_noblessed
@@ -45,6 +46,17 @@ sub dclone_cpanel_json_xs {
   local *UNIVERSAL::TO_JSON = sub { "$_[0]" };
   my $json = Cpanel::JSON::XS->new->utf8->allow_blessed->convert_blessed;
   $json->decode( $json->encode($ref) );
+}
+
+sub dclone_json_tiny {
+  my $ref = shift;
+  no warnings 'once';
+  no warnings 'redefine';
+  require JSON::Tiny;
+  # JSON::Tiny supports normal Perl data types like scalar, array reference,
+  # hash reference, and will try to call the TO_JSON method on blessed
+  # references, or stringify them if it doesn't exist.
+  return JSON::Tiny::decode_json(JSON::Tiny::encode_json($ref));
 }
 
 use Scalar::Util qw( blessed );

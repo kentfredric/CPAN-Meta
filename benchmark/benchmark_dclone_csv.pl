@@ -37,7 +37,7 @@ use FindBin;
 
 use lib "$FindBin::Bin/lib";
 use clone_methods
-  qw( dclone_json_pp dclone_json_xs dclone_pp dclone_pp_noblessed );
+  qw( dclone_json_pp dclone_json_xs dclone_pp dclone_pp_noblessed dclone_json_tiny );
 use source_data qw( load_vobjects );
 
 my $source_structure = load_vobjects("$FindBin::Bin/files/bench_source.json");
@@ -75,6 +75,13 @@ $benchmark->add_instance(
     return;
   },
 );
+$benchmark->add_instance(
+  json_clone_tiny => sub {
+    my $new = dclone_json_tiny($source_structure);
+    return;
+  },
+);
+
 
 *STDOUT->autoflush(1);
 my $num_steps = 20;
